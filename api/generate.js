@@ -85,6 +85,57 @@ export default async function handler(req, res) {
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+            prompt:              fullPrompt,
+            num_inference_steps: 4,
+            seed:                seed || Math.floor(Math.random() * 9999999),
+            go_fast:             true,
+            megapixels:          '0.25',
+            aspect_ratio:        '1:1',
+            output_format:       'jpg',
+            output_quality:      80,
+          },
+        }),
+      }
+    );
+
+    const startData = await startRes.json();
+
+    if (!startRes.ok) {
+      return res.status(startRes.status).json({
+        error: startData.detail || startData.error || `Replicate error ${startRes.status}`,
+      });
+    }
+
+    // Synchronous response — output already ready
+    if (startData.output && startData.output.length > 0) {
+      return res.status(200).json({ imageUrl: startData.output[0] });
+    }
+
+    // ── Poll for result ───────────────────────────
+    const predId = startData.id;
+    for (let i = 0; i < 30; i++) {
+      await sleep(2000);
+      const pollRes  = await fetch(`https://api.replicate.com/v1/predictions/${predId}`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      const pollData = await pollRes.json();
+
+      if (pollData.status === 'succeeded' && pollData.output?.[0]) {
+        return res.status(200).json({ imageUrl: pollData.output[0] });
+      }
+      if (pollData.status === 'failed') {
+        return res.status(500).json({ error: pollData.error || 'Prediction failed' });
+      }
+    }
+
+    return res.status(504).json({ error: 'Timed out waiting for image' });
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
             output_quality:       80,
           },
         }),
