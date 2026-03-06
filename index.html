@@ -42,7 +42,6 @@ html, body {
   overscroll-behavior: none;
 }
 
-/* subtle noise */
 body::after {
   content: '';
   position: fixed; inset: 0;
@@ -50,7 +49,7 @@ body::after {
   pointer-events: none; z-index: 9999;
 }
 
-/* ── App shell ───────────────────────────────────── */
+/* ── Shell ───────────────────────────────────────── */
 .shell {
   max-width: 430px;
   margin: 0 auto;
@@ -67,44 +66,29 @@ body::after {
   justify-content: space-between;
   padding: 52px 20px 20px;
 }
-.brand {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -1.5px;
-  line-height: 1;
-}
+.brand { font-size: 26px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
 .brand em { color: var(--lime); font-style: normal; }
-.brand-tag {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--dim);
-  margin-top: 3px;
-}
-.status-pill {
+.brand-tag { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--dim); margin-top: 3px; }
+.ready-pill {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(200,255,0,.08);
+  border: 1px solid rgba(200,255,0,.2);
   border-radius: 999px;
   padding: 6px 12px;
   font-family: var(--mono);
   font-size: 10px;
-  color: var(--muted);
-  transition: all .3s;
+  color: var(--lime);
 }
-.status-dot {
+.ready-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--dim);
-  transition: background .3s;
-  flex-shrink: 0;
+  background: var(--lime);
+  box-shadow: 0 0 6px var(--lime);
+  animation: blink 2s ease-in-out infinite;
 }
-.status-pill.ok   .status-dot { background: var(--lime); box-shadow: 0 0 6px var(--lime); }
-.status-pill.ok   { color: var(--lime); border-color: rgba(200,255,0,.2); }
-.status-pill.err  .status-dot { background: var(--coral); box-shadow: 0 0 6px var(--coral); }
-.status-pill.err  { color: var(--coral); border-color: rgba(255,95,64,.2); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
 /* ── Cards ───────────────────────────────────────── */
 .card {
@@ -114,19 +98,466 @@ body::after {
   margin: 0 16px 12px;
   overflow: hidden;
 }
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 0;
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 0; }
+.card-label  { font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--dim); }
+.card-body   { padding: 10px 16px 16px; }
+
+/* ── Prompt ──────────────────────────────────────── */
+.prompt-wrap {
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  transition: border-color .2s;
 }
-.card-label {
+.prompt-wrap:focus-within { border-color: var(--border2); }
+.prompt-ta {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.65;
+  padding: 14px;
+  resize: none;
+  min-height: 88px;
+}
+.prompt-ta::placeholder { color: var(--dim); }
+.prompt-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 14px 10px;
   font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
+  font-size: 10px;
   color: var(--dim);
 }
+.cc { transition: color .2s; }
+.cc.warn { color: var(--coral); }
+
+/* ── Styles grid ─────────────────────────────────── */
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.style-tile {
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.style-tile:hover { border-color: var(--border2); }
+.style-tile.on { border-color: var(--lime); background: rgba(200,255,0,.07); }
+.style-tile .si { font-size: 22px; display: block; margin-bottom: 5px; }
+.style-tile .sn { font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.style-tile.on .sn { color: var(--lime); }
+
+/* ── Frame count ─────────────────────────────────── */
+.fcount-row { display: flex; align-items: center; gap: 8px; }
+.fcount-lbl { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0; }
+.fcount-btns { display: flex; gap: 6px; }
+.fcb {
+  width: 40px; height: 32px;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.fcb:hover { border-color: var(--border2); color: var(--text); }
+.fcb.on { border-color: var(--lime); background: rgba(200,255,0,.08); color: var(--lime); }
+.fcount-note { font-family: var(--mono); font-size: 9px; color: var(--dim); margin-left: auto; text-align: right; line-height: 1.5; }
+
+/* ── Generate button ─────────────────────────────── */
+.gen-wrap { padding: 0 16px 12px; }
+.gen-btn {
+  width: 100%;
+  background: var(--lime);
+  color: #0d0d0d;
+  border: none;
+  border-radius: var(--r);
+  padding: 17px;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .15s;
+  position: relative;
+  overflow: hidden;
+}
+.gen-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,.15));
+  opacity: 0; transition: opacity .2s;
+}
+.gen-btn:hover::before { opacity: 1; }
+.gen-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(200,255,0,.25); }
+.gen-btn:active { transform: scale(.98); box-shadow: none; }
+.gen-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── Error ───────────────────────────────────────── */
+.err-card {
+  margin: 0 16px 12px;
+  background: rgba(255,95,64,.08);
+  border: 1px solid rgba(255,95,64,.3);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  display: none;
+}
+.err-card.show { display: block; }
+.err-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--coral); margin-bottom: 6px; }
+.err-msg { font-size: 13px; line-height: 1.6; color: #ffb3a3; }
+
+/* ── Progress ────────────────────────────────────── */
+.prog-card { margin: 0 16px 12px; display: none; }
+.prog-card.show { display: block; }
+.prog-bar-bg { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 10px; }
+.prog-bar-fg {
+  height: 100%;
+  background: linear-gradient(to right, var(--lime), var(--sky));
+  border-radius: 99px;
+  width: 0%;
+  transition: width .5s ease;
+  position: relative;
+}
+.prog-bar-fg::after {
+  content: '';
+  position: absolute;
+  right: 0; top: -2px; bottom: -2px;
+  width: 6px;
+  background: white;
+  border-radius: 99px;
+  box-shadow: 0 0 8px white;
+  animation: glow .7s ease-in-out infinite alternate;
+}
+@keyframes glow { from{opacity:.4} to{opacity:1} }
+.prog-info { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.prog-status { color: var(--text); }
+
+/* ── Thumbnails ──────────────────────────────────── */
+.thumbs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0 16px 12px;
+}
+.thumb-cell {
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.thumb-cell img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .4s; display: block; }
+.thumb-cell img.in { opacity: 1; }
+.thumb-loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--border2); }
+.thumb-cell.spinning .thumb-loader { animation: spin 1.2s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.thumb-cell.ready { border-color: var(--border2); }
+.thumb-badge {
+  position: absolute; bottom: 3px; right: 4px;
+  font-family: var(--mono); font-size: 8px; color: var(--dim);
+  background: rgba(13,13,13,.7); padding: 1px 4px; border-radius: 4px;
+}
+
+/* ── Video player ────────────────────────────────── */
+.player-card { margin: 0 16px 12px; display: none; }
+.player-card.show { display: block; }
+.player-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.player-label { font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--dim); }
+.real-badge {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+  background: rgba(200,255,0,.12); color: var(--lime);
+  border: 1px solid rgba(200,255,0,.25);
+  padding: 3px 9px; border-radius: 999px;
+}
+.canvas-wrap {
+  border-radius: var(--r); overflow: hidden;
+  background: #000; position: relative;
+  aspect-ratio: 1; cursor: pointer;
+}
+canvas#vc { width: 100%; height: 100%; display: block; }
+.canvas-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.35);
+  opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.canvas-wrap:hover .canvas-overlay { opacity: 1; }
+.canvas-overlay.paused { opacity: 1; pointer-events: all; cursor: pointer; }
+.play-ring {
+  width: 56px; height: 56px;
+  border: 2px solid rgba(255,255,255,.7);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: white;
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,.1);
+}
+.player-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.ctrl {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px; border-radius: var(--r2);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; transition: all .15s;
+}
+.ctrl.outline { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+.ctrl.outline:hover { border-color: var(--border2); color: var(--text); }
+.ctrl.solid { background: var(--lime); color: #0d0d0d; }
+.ctrl.solid:hover { box-shadow: 0 4px 16px rgba(200,255,0,.25); }
+
+/* ── Tips ────────────────────────────────────────── */
+.tips-wrap { margin: 4px 16px 0; padding-top: 16px; border-top: 1px solid var(--border); }
+.tips-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.tips-list { display: flex; flex-direction: column; gap: 10px; }
+.tip { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; color: var(--dim); line-height: 1.55; }
+.tip-i { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Animations ──────────────────────────────────── */
+@keyframes up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.topbar            { animation: up .4s .05s both; }
+.card:nth-child(1) { animation: up .4s .10s both; }
+.card:nth-child(2) { animation: up .4s .15s both; }
+.card:nth-child(3) { animation: up .4s .20s both; }
+.gen-wrap          { animation: up .4s .25s both; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div>
+      <div class="brand">Sketch<em>AI</em></div>
+      <div class="brand-tag">POWERED BY FLUX · VERCEL</div>
+    </div>
+    <div class="ready-pill">
+      <div class="ready-dot"></div>
+      <span>Ready</span>
+    </div>
+  </div>
+
+  <!-- Prompt card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Your Prompt</span>
+    </div>
+    <div class="card-body">
+      <div class="prompt-wrap">
+        <textarea class="prompt-ta" id="promptTa" maxlength="300"
+          placeholder="a lone astronaut on a misty alien planet, dramatic lighting…"
+          oninput="onPromptChange()"></textarea>
+        <div class="prompt-footer">
+          <span>Describe your scene in detail</span>
+          <span class="cc" id="cc">0/300</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Style card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Sketch Style</span>
+    </div>
+    <div class="card-body">
+      <div class="style-grid" id="styleGrid">
+        <div class="style-tile on" onclick="pickStyle(this,'pencil sketch, graphite lines, white background, hand drawn linework')">
+          <span class="si">✏️</span><span class="sn">Pencil</span>
+        </div>
+        <div class="style-tile" onclick="pickStyle(this,'charcoal drawing, dark expressive strokes, smudged shading')">
+          <span class="si">🖤</span><span class="sn">Charcoal</span>
+        </div>
+        <div class="style-tile" onclick="pickStyle(this,'ink illustration, fine cross-hatching, black ink on white paper')">
+          <span class="si">🖋️</span><span class="sn">Ink</span>
+        </div>
+        <div class="style-tile" onclick="pickStyle(this,'watercolor sketch, soft washes, loose expressive brushwork')">
+          <span class="si">🎨</span><span class="sn">Watercolor</span>
+        </div>
+        <div class="style-tile" onclick="pickStyle(this,'anime lineart, clean cel-shaded outlines, manga illustration')">
+          <span class="si">⚡</span><span class="sn">Anime</span>
+        </div>
+        <div class="style-tile" onclick="pickStyle(this,'blueprint technical diagram, white lines on dark blue, architectural')">
+          <span class="si">📐</span><span class="sn">Blueprint</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frames card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Frame Count</span>
+    </div>
+    <div class="card-body">
+      <div class="fcount-row">
+        <span class="fcount-lbl">Frames</span>
+        <div class="fcount-btns">
+          <button class="fcb"    onclick="pickFrames(this,3)">3</button>
+          <button class="fcb on" onclick="pickFrames(this,5)">5</button>
+          <button class="fcb"    onclick="pickFrames(this,8)">8</button>
+        </div>
+        <span class="fcount-note">More = smoother<br>but uses credits</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <div class="gen-wrap">
+    <button class="gen-btn" id="genBtn" onclick="generate()">
+      ⚡ Generate Video
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div class="err-card" id="errCard">
+    <div class="err-title">⚠ Error</div>
+    <div class="err-msg" id="errMsg"></div>
+  </div>
+
+  <!-- Progress -->
+  <div class="prog-card" id="progCard">
+    <div class="prog-bar-bg">
+      <div class="prog-bar-fg" id="progFg"></div>
+    </div>
+    <div class="prog-info">
+      <span class="prog-status" id="progStatus">Starting…</span>
+      <span id="progFrac">0 / 0</span>
+    </div>
+  </div>
+
+  <!-- Thumbnails -->
+  <div class="thumbs-grid" id="thumbsGrid"></div>
+
+  <!-- Player -->
+  <div class="player-card" id="playerCard">
+    <div class="player-header">
+      <span class="player-label">Generated Video</span>
+      <span class="real-badge">✓ Real AI</span>
+    </div>
+    <div class="canvas-wrap" id="canvasWrap" onclick="togglePlay()">
+      <canvas id="vc" width="512" height="512"></canvas>
+      <div class="canvas-overlay paused" id="canvasOverlay">
+        <div class="play-ring" id="playRing">▶</div>
+      </div>
+    </div>
+    <div class="player-controls">
+      <button class="ctrl outline" id="playCtrl" onclick="togglePlay()">⏸ Pause</button>
+      <button class="ctrl solid"   onclick="downloadFrames()">⬇ Download</button>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="tips-wrap">
+    <div class="tips-lbl">Tips</div>
+    <div class="tips-list">
+      <div class="tip"><span class="tip-i">✏️</span><span>Mention the sketch style in your prompt too — e.g. "pencil sketch style, white background"</span></div>
+      <div class="tip"><span class="tip-i">🎬</span><span>3 frames = fast. 8 frames = silky smooth animation</span></div>
+      <div class="tip"><span class="tip-i">📱</span><span>Add this page to your home screen for a native app feel — Share → Add to Home Screen</span></div>
+      <div class="tip"><span class="tip-i">🌟</span><span>Add mood words to your prompt — dramatic, misty, warm, dark, cinematic</span></div>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+// ── State ────────────────────────────────────────
+let selStyle  = 'pencil sketch, graphite lines, white background, hand drawn linework';
+let numFrames = 5;
+let frames    = [];
+let bitmaps   = [];
+let rafId     = null;
+let playing   = false;
+let curFrame  = 0;
+let lastT     = 0;
+const FPS     = 5;
+
+// ── Prompt ───────────────────────────────────────
+function onPromptChange() {
+  const v  = document.getElementById('promptTa').value;
+  const el = document.getElementById('cc');
+  el.textContent = v.length + '/300';
+  el.className = 'cc' + (v.length > 260 ? ' warn' : '');
+}
+
+// ── Style ────────────────────────────────────────
+function pickStyle(el, s) {
+  document.querySelectorAll('.style-tile').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  selStyle = s;
+}
+
+// ── Frames ───────────────────────────────────────
+function pickFrames(el, n) {
+  document.querySelectorAll('.fcb').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  numFrames = n;
+}
+
+// ── Error ────────────────────────────────────────
+function showErr(msg) {
+  const c = document.getElementById('errCard');
+  document.getElementById('errMsg').textContent = msg;
+  c.classList.add('show');
+  c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function hideErr() { document.getElementById('errCard').classList.remove('show'); }
+
+// ── Progress ─────────────────────────────────────
+function setProg(pct, status, frac) {
+  document.getElementById('progCard').classList.add('show');
+  document.getElementById('progFg').style.width = pct + '%';
+  document.getElementById('progStatus').textContent = status;
+  document.getElementById('progFrac').textContent = frac;
+}
+function hideProg() { document.getElementById('progCard').classList.remove('show'); }
+
+// ── Thumbnails ───────────────────────────────────
+function buildThumbs(n) {
+  const g = document.getElementById('thumbsGrid');
+  g.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    g.innerHTML += `
+      <div class="thumb-cell" id="tc${i}">
+        <div class="thumb-loader">○</div>
+        <img id="ti${i}" alt="frame ${i+1}"/>
+        <span class="thumb-badge">${i+1}</span>
+      </div>`;
+  }
+}
+function thumbSpinning(i) {
+  const c = document.getElementById('tc'+i);
+  if (c) { c.classList.add('spinning'); c.querySelector('.thumb-loader').textContent = '◌'; }
+}
+function thumbDone(i, url) {
+  const c  = document.getElementById('tc'+i);
+  const im = document.getElementById('ti'+i);
+  if (!c || !im) return;
+  c.classList.remove('spinning');
+  c.classList.add('ready');
+  c.querySelector('.thumb-loader').style.display = 'none';
+  im.src = url;
+  im.onload = () => im.classList.add('in');
+}
+
+// }
 .card-body { padding: 10px 16px 16px; }
 
 /* ── API key input ───────────────────────────────── */
